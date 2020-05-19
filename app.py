@@ -12,6 +12,9 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
+from flask_migrate import Migrate
+
+from config import SQLALCHEMY_DATABASE_URI
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -19,7 +22,11 @@ from forms import *
 app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
+app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+migrate = Migrate(app, db)
 
 # TODO: connect to a local postgresql database
 
@@ -27,33 +34,86 @@ db = SQLAlchemy(app)
 # Models.
 #----------------------------------------------------------------------------#
 
+shows = db.Table('shows',
+  db.Column('artist_id', db.Integer, db.ForeignKey('artist.id'), primary_key=True),
+  db.Column('venue_id', db.Integer, db.ForeignKey('venue.id'), primary_key=True),
+  db.Column('start_time', db.DateTime)
+  )
+
 class Venue(db.Model):
-    __tablename__ = 'Venue'
+    __tablename__ = 'venue'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
+    name = db.Column(db.String, nullable=False)
+    city = db.Column(db.String(120), nullable=False)
+    state = db.Column(db.String(120), nullable=False)
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    website = db.Column(db.String(120))
+    genres = db.Column(db.ARRAY(db.String(120)))
+    seeking_talent = db.Column(db.Boolean, nullable=False, default=False)
+    seeking_description = db.Column(db.String(500), default="")
+    shows = db.relationship('Artist',
+      secondary=shows,
+      backref=db.backref('venues', lazy=True),
+      lazy=True
+    )
+
+    def __init__(self, id, name, city, state, address, phone, image_link, facebook_link, website, genres, seeking_talent=False, seeking_description=""):
+      self.id = id
+      self.name = name
+      self.city = city
+      self.state = state
+      self.address = address
+      self.phone = phone
+      self.image_link = image_link
+      self.facebook_link = facebook_link
+      self.website = website
+      self.genres = genres
+      self.seeking_talent = seeking_talent
+      self.seeking_description = seeking_description
+
+    def __repr__(self):
+      return f'<class {self.id} {self.name}>'
+
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 class Artist(db.Model):
-    __tablename__ = 'Artist'
+    __tablename__ = 'artist'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
+    name = db.Column(db.String, nullable=False)
+    city = db.Column(db.String(120), nullable=False)
+    state = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(120))
-    genres = db.Column(db.String(120))
+    genres = db.Column(db.ARRAY(db.String(120)))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    website = db.Column(db.String(120))
+    seeking_venue = db.Column(db.Boolean, nullable=False, default=False)
+    seeking_description = db.Column(db.String(1000), default="")
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    def __init__(self, id, name, city, state, phone, genres, image_link, facebook_link, website, seeking_venue=False, seeking_description=""):
+      self.id = id
+      self.name = name
+      self.city = city
+      self.state = state
+      self.phone = phone
+      self.genres = genres
+      self.image_link = image_link
+      self.facebook_link = facebook_link
+      self.website = website
+      self.seeking_venue = seeking_venue
+      self.seeking_description = seeking_description
+
+
+    def __repr__(self):
+      return f'<class {self.id} {self.name}>'
+
+
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 
@@ -108,7 +168,7 @@ def venues():
       "num_upcoming_shows": 0,
     }]
   }]
-  return render_template('pages/venues.html', areas=data);
+  return render_template('pages/venues.html', areas=data)
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
