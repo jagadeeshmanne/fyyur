@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask_wtf import Form
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, RadioField, TextAreaField
-from wtforms.validators import DataRequired, AnyOf, URL, Required
+from wtforms.validators import DataRequired, AnyOf, URL
 
 class ShowForm(Form):
     artist_id = StringField(
@@ -124,7 +124,7 @@ class VenueForm(Form):
     seeking_talent = RadioField('Seeking talents', choices=[
         ('True', 'Yes'),
         ('False', 'No')],
-        default='False', validators=[Required()])
+        default='False', validators=[DataRequired()])
     seeking_description = TextAreaField('Seeking description')
 
 
@@ -233,6 +233,6 @@ class ArtistForm(Form):
     seeking_venue = RadioField('Seeking venues', choices=[
         ('True', 'Yes'),
         ('False', 'No')],
-        default='False', validators=[Required()])
+        default='False', validators=[DataRequired()])
     seeking_description = TextAreaField('Seeking description')
 # TODO IMPLEMENT NEW ARTIST FORM AND NEW SHOW FORM
