@@ -1,14 +1,16 @@
 from datetime import datetime
 from flask_wtf import Form
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField
-from wtforms.validators import DataRequired, AnyOf, URL
+from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, RadioField, TextAreaField
+from wtforms.validators import DataRequired, AnyOf, URL, Required
 
 class ShowForm(Form):
     artist_id = StringField(
-        'artist_id'
+        'artist_id',
+        validators=[DataRequired()]
     )
     venue_id = StringField(
-        'venue_id'
+        'venue_id',
+        validators=[DataRequired()]
     )
     start_time = DateTimeField(
         'start_time',
@@ -83,7 +85,7 @@ class VenueForm(Form):
         'address', validators=[DataRequired()]
     )
     phone = StringField(
-        'phone'
+        'phone', validators=[DataRequired()]
     )
     image_link = StringField(
         'image_link'
@@ -116,6 +118,15 @@ class VenueForm(Form):
     facebook_link = StringField(
         'facebook_link', validators=[URL()]
     )
+    website = StringField(
+        'website', validators=[URL()]
+    )
+    seeking_talent = RadioField('Seeking talents', choices=[
+        ('True', 'Yes'),
+        ('False', 'No')],
+        default='False', validators=[Required()])
+    seeking_description = TextAreaField('Seeking description')
+
 
 class ArtistForm(Form):
     name = StringField(
@@ -182,7 +193,7 @@ class ArtistForm(Form):
     )
     phone = StringField(
         # TODO implement validation logic for state
-        'phone'
+        'phone', validators=[DataRequired()]
     )
     image_link = StringField(
         'image_link'
@@ -216,5 +227,12 @@ class ArtistForm(Form):
         # TODO implement enum restriction
         'facebook_link', validators=[URL()]
     )
-
+    website = StringField(
+        'website', validators=[URL()]
+    )
+    seeking_venue = RadioField('Seeking venues', choices=[
+        ('True', 'Yes'),
+        ('False', 'No')],
+        default='False', validators=[Required()])
+    seeking_description = TextAreaField('Seeking description')
 # TODO IMPLEMENT NEW ARTIST FORM AND NEW SHOW FORM
