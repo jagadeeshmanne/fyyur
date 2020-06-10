@@ -2,5 +2,6 @@
 __pycache__/
 env/
 .vscode/
+.idea/
 test_data.txt
 test.py
